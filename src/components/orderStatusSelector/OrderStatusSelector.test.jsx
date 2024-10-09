@@ -18,7 +18,8 @@ describe('OrderStatusSelector', () => {
           onChange,
           trigger: screen.getByRole("combobox"),
             user,
-          getOptions: ()=>screen.findAllByRole("option"),
+          getOptions: () => screen.findAllByRole("option"),
+          getOption: (label)=> screen.getByRole("option", { name: label })
         };
     }
 
@@ -36,12 +37,26 @@ describe('OrderStatusSelector', () => {
         expect(labels).toEqual(["New", "Processed", "Fulfilled"]);
     });
 
-    it("onChange receives correct velue on clicking option 'Processed'", async () => {
-      const { trigger, onChange, user, getOptions } = renderComponent();
+  it.each([
+    { label: /processed/i, value: 'processed' },
+    { label: /fulfilled/i, value: 'fulfilled' },
+  ])("should call onChange with $value when $label option is selected", async ({ label, value }) => {
+      const { trigger, onChange, user, getOption } = renderComponent();
       await user.click(trigger);
-      const options = await getOptions();
-      const option = screen.getByRole("option", { name: /processed/i });
+      const option = getOption(label );
       await user.click(option);
-      expect(onChange).toHaveBeenCalledWith("processed");
-    });
+      expect(onChange).toHaveBeenCalledWith(value);
+  });
+  
+  it("should call onChange with 'new' when /new/i option is selected", async () => {
+    const { trigger, onChange, user, getOption } = renderComponent();
+    await user.click(trigger);
+    const tempOption = getOption(/processed/i);
+    await user.click(tempOption);
+    await user.click(trigger);
+    const option = getOption(/new/i);
+    await user.click(option);
+    expect(onChange).toHaveBeenCalledWith('new');
+  })
 })
+
