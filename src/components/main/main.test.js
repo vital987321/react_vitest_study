@@ -1,10 +1,11 @@
 import { it, expect, describe } from 'vitest'
+import { db } from '../../tests/mocks/db'
 
-describe('Checking test setup', () => {
-    it('should fetch mock server and get 3 items in response', async () => {
-        const response = await fetch('/categories')
-        const data = await response.json()
-        console.log(data)
-        expect(data).toHaveLength(3)
+describe('Checking', () => {
+    it('should', async () => {
+        const firstProduct = db.product.create()
+        console.log(firstProduct)
+        db.product.create({ name: 'Apple' });
+        console.log(db.product.getAll())
     })
 })
