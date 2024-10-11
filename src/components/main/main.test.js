@@ -5,7 +5,10 @@ describe('Checking', () => {
     it('should', async () => {
         const firstProduct = db.product.create()
         console.log(firstProduct)
-        db.product.create({ name: 'Apple' });
+        const product = db.product.create({ name: 'Apple' });
         console.log(db.product.getAll())
+        db.product.delete({ where: { id: { equals: product.id } } })
+        db.product.delete({where: {}});
+        
     })
 })
