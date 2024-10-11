@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react"
 import ProductDetail from "./ProductDetail"
 import { products } from '../../tests/mocks/data'
 import { db } from '../../tests/mocks/db'
+import { http, HttpResponse } from 'msw'
+import { server } from '../../tests/mocks/server'
 
 describe('ProductDetail', () => {
     let productId;
@@ -29,9 +31,15 @@ describe('ProductDetail', () => {
         const message = await screen.findByText(/not found/i)
         expect(message).toBeInTheDocument()
     });
-    it('should render error message for invalid id=0', () => {
-        render(<ProductDetail productId={0} />)
-        const errorMessage=screen.getByText(/invalid product/i)
+    it('should render "Invalid ProductId" message for product id=0', () => {
+      render(<ProductDetail productId={0} />);
+      const errorMessage = screen.getByText(/invalid product/i);
+    });
+    it('should should render an error message', async () => {
+        server.use(http.get('/products/:id', ({ params }) => HttpResponse.error([])))
+        render(<ProductDetail productId={1} />)
+        const errorMessage = await screen.findByText(/error/i)
+        expect(errorMessage).toBeInTheDocument()
     })
 })
 
