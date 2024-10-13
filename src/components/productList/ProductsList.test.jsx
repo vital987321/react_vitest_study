@@ -1,11 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitForElementToBeRemoved } from "@testing-library/react";
 import ProductList from "./ProductList";
 import { server } from "../../tests/mocks/server";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { afterAll, beforeAll } from "vitest";
 import { db } from "../../tests/mocks/db";
-
-
 
 
 describe('ProductList with Moked db', () => {
@@ -36,6 +34,23 @@ describe('ProductList with Moked db', () => {
         render(<ProductList />);
         const message = await screen.findByText(/error/i);
         expect(message).toBeInTheDocument();
+    })
+    it('should render a loading indicator when fetching data', async () => {
+        server.use(http.get("/products", async ()=>{
+            await delay()
+            return HttpResponse.json([])
+        }))
+        render(<ProductList/>)
+        expect(await screen.findByText(/loading/i)).toBeInTheDocument()
+    })
+    it('should removed the loading indicator after data is fetched', async  () => {
+        render(<ProductList/>)
+        await waitForElementToBeRemoved(()=>screen.queryByText(/loading/i))
+    })
+    it('should removed the loading indicator if data fetching fails', async () => {
+        server.use(http.get("/products", () => HttpResponse.error([])));
+        render(<ProductList/>)
+        await waitForElementToBeRemoved(()=>screen.queryByText(/loading/i))
     })
 })
 

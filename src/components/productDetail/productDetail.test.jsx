@@ -1,5 +1,5 @@
 import { it, expect, describe } from 'vitest'
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitForElementToBeRemoved } from "@testing-library/react"
 import ProductDetail from "./ProductDetail"
 import { products } from '../../tests/mocks/data'
 import { db } from '../../tests/mocks/db'
@@ -40,6 +40,22 @@ describe('ProductDetail', () => {
         render(<ProductDetail productId={1} />)
         const errorMessage = await screen.findByText(/error/i)
         expect(errorMessage).toBeInTheDocument()
+    })
+    it('should render a loading indicator when fetching data', () => {
+      server.use(http.get('/products/:id', ({ params }) => HttpResponse.json([])))
+      render(<ProductDetail productId={1}/>)
+      const message=screen.getByText(/loading/i)
+      expect(message).toBeInTheDocument()
+    })
+    it('should remove the loading indicator when data are fetched', async () => {
+      server.use(http.get('/products/:id', ({ params }) => HttpResponse.json([])))
+      render(<ProductDetail productId={1}/>)
+      await waitForElementToBeRemoved(()=>screen.getByText(/loading/i))
+    })
+    it('should remove the loading indicator when fetching fails', async () => {
+      server.use(http.get('/products/:id', ({ params }) => HttpResponse.error([])))
+      render(<ProductDetail productId={1}/>)
+      await waitForElementToBeRemoved(()=>screen.getByText(/loading/i))
     })
 })
 
